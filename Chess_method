@@ -1,0 +1,89 @@
+class Robot:
+    def __init__(self, robot_id, is_bishop):
+        self.robot_id = robot_id
+        self.is_bishop = is_bishop
+        self.position = (0, 0)  # Starting at the top-left corner of the grid
+
+    def move(self, direction, steps, grid_size, occupied_positions):
+        x, y = self.position
+        for _ in range(steps):
+            new_position = x, y
+            if self.is_bishop:
+
+                dx, dy = 0, 0
+                if direction == 'N':
+                    dx, dy = -2, 1
+                elif direction == 'S':
+                    dx, dy = 2, -1
+                elif direction == 'E':
+                    dx, dy = 1, 2
+                elif direction == 'W':
+                    dx, dy = -1, -2
+            else:
+
+                dx, dy = 0, 0
+                if direction == 'N':
+                    dx, dy = -1, 2
+                elif direction == 'S':
+                    dx, dy = 1, -2
+                elif direction == 'E':
+                    dx, dy = 2, 1
+                elif direction == 'W':
+                    dx, dy = -2, -1
+
+            new_position = (x + dx, y + dy)
+
+            # Check boundaries and collision
+            if new_position[0] < 0 or new_position[0] >= grid_size[0] or \
+                    new_position[1] < 0 or new_position[1] >= grid_size[1] or \
+                    new_position in occupied_positions:
+                break  # Stop moving if there's a boundary or collision
+            x, y = new_position
+        self.position = (x, y)
+        print(f"Robot {self.robot_id} goes {steps} steps to {direction}")
+
+    def get_position(self):
+        return self.position
+
+
+class Terrain:
+    def __init__(self, rows, cols):
+        self.grid_size = (rows, cols)
+        self.robots = {}
+
+    def add_robot(self, robot_id, is_bishop):
+        if robot_id in self.robots:
+            raise ValueError(f"Robot with ID {robot_id} already exists.")
+        self.robots[robot_id] = Robot(robot_id, is_bishop)
+
+    def move_robot(self, robot_id, command):
+        if robot_id not in self.robots:
+            raise ValueError(f"Robot with ID {robot_id} not found.")
+        if len(command) != 2 or not command[1].isdigit():
+            raise ValueError("Invalid command format. Expected format is <Direction><Steps>.")
+
+        robot = self.robots[robot_id]
+        direction = command[0].upper()
+        steps = int(command[1])
+
+        occupied_positions = {r.get_position() for rid, r in self.robots.items() if rid != robot_id}
+
+
+        robot.move(direction, steps, self.grid_size, occupied_positions)#move the robot
+
+    def get_robot_position(self, robot_id):
+        if robot_id not in self.robots:
+            raise ValueError(f"Robot with ID {robot_id} not found.")
+        return self.robots[robot_id].get_position()
+
+
+
+terrain = Terrain(5, 5)
+terrain.add_robot(1, is_bishop=True) #robot for bishop
+terrain.add_robot(2, is_bishop=False) #robot for horse
+
+terrain.move_robot(1, 'E2')
+terrain.move_robot(2, 'N1')
+
+
+
